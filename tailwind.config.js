@@ -1,18 +1,34 @@
+const colors = require("tailwindcss/colors");
 module.exports = {
   theme: {
-    extend: {}
+    extend: {},
+    colors: {
+      airswapblue: "#2b72ff",
+      transparent: "transparent",
+      current: "currentColor",
+      black: colors.black,
+      white: colors.white,
+      gray: colors.trueGray,
+      indigo: colors.indigo,
+      red: colors.rose,
+      yellow: colors.amber,
+    },
   },
-  variants: {},
-  plugins: [],
+  variants: {
+    extend: {
+      opacity: ["disabled"],
+    },
+  },
+  plugins: [require("@tailwindcss/typography")],
   purge: {
     // Filenames to scan for classes
     content: [
-      './src/**/*.html',
-      './src/**/*.js',
-      './src/**/*.jsx',
-      './src/**/*.ts',
-      './src/**/*.tsx',
-      './public/index.html',
+      "./src/**/*.html",
+      "./src/**/*.js",
+      "./src/**/*.jsx",
+      "./src/**/*.ts",
+      "./src/**/*.tsx",
+      "./public/index.html",
     ],
     // Options passed to PurgeCSS
     options: {
@@ -20,4 +36,4 @@ module.exports = {
       // safelist: [],
     },
   },
-}
+};
