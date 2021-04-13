@@ -22,8 +22,9 @@ const ASTBalance: FC<{
   }, [loading, onLoadComplete, onLoadStart]);
 
   const hasBalances = balances.sAst && balances.ast;
-  const total = (hasBalances && balances.ast!.add(balances.sAst!)) || "0";
-  const percentStaked = hasBalances && balances.sAst!.div(total).mul(100);
+  const total = hasBalances && balances.ast!.add(balances.sAst!);
+  const percentStaked =
+    hasBalances && (balances.sAst!.toNumber() / total!.toNumber()) * 100;
 
   return (
     <div className={classNames("flex items-center", className)}>
@@ -40,14 +41,14 @@ const ASTBalance: FC<{
               <>
                 <span className="font-normal">
                   {utils.commify(
-                    parseFloat(utils.formatUnits(total.toString(), 4)).toFixed(
+                    parseFloat(utils.formatUnits(total!.toString(), 4)).toFixed(
                       1
                     )
                   )}{" "}
                   (
                 </span>
                 <span className="font-normal">
-                  {percentStaked?.toNumber().toFixed(0)}% staked)
+                  {(percentStaked || 0).toFixed(0)}% staked)
                 </span>
               </>
             ) : loading ? (

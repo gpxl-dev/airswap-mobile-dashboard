@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, Fragment } from "react";
 import classNames from "classnames";
 import { AiOutlineLoading } from "react-icons/ai";
 import { FaSearchDollar } from "react-icons/fa";
@@ -63,7 +63,7 @@ function App() {
   return (
     <div className="flex flex-col h-full items-center justify-center p-4 max-w-lg mx-auto">
       <h1 className="font-bold text-lg mb-4">
-        Airswap balance & voting status
+        AirSwap balance & voting status
       </h1>
       <div className="flex flex-col my-2">
         <label htmlFor="address" className="font-semibold uppercase text-sm">
@@ -171,7 +171,7 @@ function App() {
         onLoadComplete={onLoadComplete}
       />
       <h1 className="font-bold text-base mt-6 mb-4">
-        Airswap improvement proposals
+        AirSwap improvement proposals
       </h1>
       {!proposals ? (
         "Loading proposals"
@@ -185,7 +185,7 @@ function App() {
           {categorisedProposals.map(({ label, proposals }) => {
             if (!proposals?.length && label === "upcoming") return null;
             return (
-              <>
+              <Fragment key={label}>
                 <h3 className="col-span-full uppercase font-bold text-center text-sm border-t border-b border-gray-300 py-3">
                   {label}
                 </h3>
@@ -202,7 +202,7 @@ function App() {
                 ) : (
                   <div className="col-span-full italic opacity-60 text-center my-4">{`There are currently no ${label} proposals`}</div>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </div>

@@ -8,11 +8,23 @@ const astContract = new Contract(
   abi,
   ethersProvider
 );
-const sAstContract = new Contract(
-  "0x579120871266ccd8De6c85EF59E2fF6743E7CD15",
-  abi,
-  ethersProvider
-);
+const sAstContracts = [
+  new Contract(
+    "0x579120871266ccd8de6c85ef59e2ff6743e7cd15",
+    abi,
+    ethersProvider
+  ),
+  new Contract(
+    "0xa4C5107184a88D4B324Dd10D98a11dd8037823Fe",
+    abi,
+    ethersProvider
+  ),
+  new Contract(
+    "0x704c5818b574358dfb5225563852639151a943ec",
+    abi,
+    ethersProvider
+  ),
+];
 type AstBalances = {
   // null when loading.
   ast: BigNumber | null;
@@ -32,13 +44,16 @@ const useAstBalances = (walletAddress: string | null) => {
         const astPromise: Promise<BigNumber> = astContract.balanceOf(
           walletAddress
         );
-        const sAstPromise: Promise<BigNumber> = sAstContract.balanceOf(
-          walletAddress
+        const sAstPromises: Promise<BigNumber>[] = sAstContracts.map(
+          (contract) => contract.balanceOf(walletAddress)
         );
-        const [ast, sAst] = await Promise.all([astPromise, sAstPromise]);
+        const [ast, ...sAst] = await Promise.all([astPromise, ...sAstPromises]);
         setBalances({
           ast,
-          sAst,
+          sAst: sAst.reduce((accumulator: BigNumber | null, bal) => {
+            if (accumulator == null) return bal;
+            return accumulator.add(bal);
+          }, null),
         });
       } catch (e) {
         console.error(e);
