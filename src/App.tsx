@@ -1,13 +1,10 @@
 import { useCallback, useState } from "react";
-import ReactMarkdown from "react-markdown";
 import classNames from "classnames";
-import { FaVoteYea } from "react-icons/fa";
-import { VscCommentDiscussion } from "react-icons/vsc";
-import { AiOutlineGithub, AiOutlineLoading } from "react-icons/ai";
-import { GoChevronRight } from "react-icons/go";
+import { AiOutlineLoading } from "react-icons/ai";
 import { FaSearchDollar } from "react-icons/fa";
 import useProposals from "./Hooks/useProposals";
 import ASTBalance from "./Components/ASTBalance";
+import ProposalListItem from "./Components/ProposalListItem";
 
 function App() {
   const [addressFieldValue, setAddressFieldValue] = useState<string>(
@@ -26,9 +23,18 @@ function App() {
     setBalanceLoading(false);
   }, []);
   const [expanded, setExpanded] = useState<string[]>([]);
+
   const [showConfirmDefaultChange, setShowConfirmDefaultChange] = useState<
     "set" | "unset" | null
   >(null);
+
+  const toggleExpanded = (proposalId: string) => {
+    setExpanded((prev) =>
+      prev.includes(proposalId)
+        ? prev.filter((id) => id !== proposalId)
+        : prev.concat([proposalId])
+    );
+  };
 
   const isNotDefaultAddress =
     balanceAddress &&
@@ -39,10 +45,25 @@ function App() {
 
   const proposals = useProposals();
 
+  const categorisedProposals = [
+    {
+      label: "active",
+      proposals: proposals?.filter((p) => p.active),
+    },
+    {
+      label: "upcoming",
+      proposals: proposals?.filter((p) => p.start * 1000 > Date.now()),
+    },
+    {
+      label: "past",
+      proposals: proposals?.filter((p) => p.end * 1000 < Date.now()),
+    },
+  ];
+
   return (
     <div className="flex flex-col h-full items-center justify-center p-4 max-w-lg mx-auto">
-      <h1 className="font-bold text-lg">
-        Airswap balance & voting status proof of concept
+      <h1 className="font-bold text-lg mb-4">
+        Airswap balance & voting status
       </h1>
       <div className="flex flex-col my-2">
         <label htmlFor="address" className="font-semibold uppercase text-sm">
@@ -149,78 +170,41 @@ function App() {
         onLoadStart={onLoadStart}
         onLoadComplete={onLoadComplete}
       />
+      <h1 className="font-bold text-base mt-6 mb-4">
+        Airswap improvement proposals
+      </h1>
       {!proposals ? (
         "Loading proposals"
       ) : (
         <div
-          className="grid gap-4 items-center my-8"
+          className="grid gap-4 items-center"
           style={{
             gridTemplateColumns: "auto auto 2rem 2rem",
           }}
         >
-          {proposals.map((proposal) => (
-            <div className="contents">
-              <button
-                className={classNames(
-                  "p-4 -m-4",
-                  "cursor-pointer select-none focus:outline-none",
-                  "transition-transform duration-150 transform rotate-0",
-                  expanded.includes(proposal.id) ? "rotate-90" : ""
+          {categorisedProposals.map(({ label, proposals }) => {
+            if (!proposals?.length && label === "upcoming") return null;
+            return (
+              <>
+                <h3 className="col-span-full uppercase font-bold text-center text-sm border-t border-b border-gray-300 py-3">
+                  {label}
+                </h3>
+                {proposals?.length ? (
+                  proposals.map((proposal) => (
+                    <ProposalListItem
+                      key={proposal.id}
+                      proposal={proposal}
+                      expanded={expanded.includes(proposal.id)}
+                      voted={proposal.voters.includes(balanceAddress)}
+                      onToggleExpanded={() => toggleExpanded(proposal.id)}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full italic opacity-60 text-center my-4">{`There are currently no ${label} proposals`}</div>
                 )}
-                style={{
-                  WebkitTapHighlightColor: "transparent",
-                }}
-                onClick={() => {
-                  setExpanded((prev) =>
-                    prev.includes(proposal.id)
-                      ? prev.filter((id) => id !== proposal.id)
-                      : prev.concat([proposal.id])
-                  );
-                }}
-              >
-                <GoChevronRight />
-              </button>
-              <div
-                onClick={() => {
-                  setExpanded((prev) =>
-                    prev.includes(proposal.id)
-                      ? prev.filter((id) => id !== proposal.id)
-                      : prev.concat([proposal.id])
-                  );
-                }}
-              >
-                {proposal.name}
-              </div>
-              <div className="grid grid-rows-1 gap-2">
-                {proposal.communityUrl && (
-                  <a
-                    href={proposal.communityUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <VscCommentDiscussion />
-                  </a>
-                )}
-                {proposal.githubUrl && (
-                  <a href={proposal.githubUrl} target="_blank" rel="noreferrer">
-                    <AiOutlineGithub />
-                  </a>
-                )}
-              </div>
-              {proposal.voters.includes(addressFieldValue) ? (
-                <FaVoteYea />
-              ) : (
-                "-"
-              )}
-              {expanded.includes(proposal.id) && (
-                <div className="col-span-3 col-start-2">
-                  <ReactMarkdown className="prose text-gray-600">
-                    {proposal.body}
-                  </ReactMarkdown>
-                </div>
-              )}
-            </div>
-          ))}
+              </>
+            );
+          })}
         </div>
       )}
     </div>
