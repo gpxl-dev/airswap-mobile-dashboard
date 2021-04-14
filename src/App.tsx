@@ -181,14 +181,14 @@ function App() {
         <div
           className="grid gap-4 items-center"
           style={{
-            gridTemplateColumns: "auto auto 3rem 2rem",
+            gridTemplateColumns: "auto auto 2rem",
           }}
         >
           {categorisedProposals.map(({ label, proposals }) => {
             if (!proposals?.length && label === "upcoming") return null;
             return (
               <Fragment key={label}>
-                <h3 className="col-span-full uppercase font-bold text-center text-sm border-t border-b border-gray-300 py-3">
+                <h3 className="col-span-full col-start-1 uppercase font-bold text-center text-sm border-t border-b border-gray-300 py-3">
                   {label}
                 </h3>
                 {proposals?.length ? (
@@ -202,7 +202,7 @@ function App() {
                     />
                   ))
                 ) : (
-                  <div className="col-span-full italic opacity-60 text-center my-4">{`There are currently no ${label} proposals`}</div>
+                  <div className="col-span-full col-start-1 italic opacity-60 text-center my-4">{`There are currently no ${label} proposals`}</div>
                 )}
               </Fragment>
             );

@@ -20,7 +20,7 @@ const ProposalListItem: FC<{
     <div className="contents">
       <button
         className={classNames(
-          "p-4 -m-4",
+          "col-start-1 p-4 -m-4",
           "cursor-pointer select-none focus:outline-none",
           "transition-transform duration-150 transform rotate-0",
           expanded ? "rotate-90" : ""
@@ -47,7 +47,7 @@ const ProposalListItem: FC<{
         )}
         <span className="font-semibold">{proposal.name}</span>
       </div>
-      <div className="grid grid-flow-col gap-2">
+      {/* <div className="grid grid-flow-col gap-2">
         <a href={proposal.proposalUrl} target="_blank" rel="noreferrer">
           <BsFillLightningFill />
         </a>
@@ -61,10 +61,43 @@ const ProposalListItem: FC<{
             <AiOutlineGithub />
           </a>
         )}
-      </div>
+      </div> */}
       {voted ? <FaVoteYea /> : "-"}
       {expanded && (
-        <div className="col-span-3 col-start-2">
+        <div className="col-start-2">
+          {
+            <div className="grid grid-flow-col justify-items-center mb-4">
+              <a
+                href={proposal.proposalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center text-sm underline"
+              >
+                <BsFillLightningFill className="mr-1" /> Snapshot voting
+              </a>
+              {proposal.communityUrl && (
+                <a
+                  href={proposal.communityUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center text-sm underline"
+                >
+                  <VscCommentDiscussion className="mr-2" /> AirSwap forum
+                  discussion
+                </a>
+              )}
+              {proposal.githubUrl && (
+                <a
+                  href={proposal.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center text-sm underline"
+                >
+                  <AiOutlineGithub className="mr-2" /> GitHub discussion
+                </a>
+              )}
+            </div>
+          }
           <ReactMarkdown className="prose-sm text-gray-600">
             {proposal.body}
           </ReactMarkdown>
