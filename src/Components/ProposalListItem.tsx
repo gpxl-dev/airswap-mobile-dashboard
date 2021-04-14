@@ -73,7 +73,7 @@ const ProposalListItem: FC<{
                 rel="noreferrer"
                 className="flex items-center text-sm underline"
               >
-                <BsFillLightningFill className="mr-1" /> Snapshot voting
+                <BsFillLightningFill className="mr-1" /> Voting
               </a>
               {proposal.communityUrl && (
                 <a
@@ -82,8 +82,7 @@ const ProposalListItem: FC<{
                   rel="noreferrer"
                   className="flex items-center text-sm underline"
                 >
-                  <VscCommentDiscussion className="mr-2" /> AirSwap forum
-                  discussion
+                  <VscCommentDiscussion className="mr-2" /> Forum discussion
                 </a>
               )}
               {proposal.githubUrl && (

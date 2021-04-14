@@ -91,7 +91,7 @@ export type ReducedProposal = {
 const snapShotApiUrlBase = "https://hub.snapshot.page/api";
 // Note: proxy needed due to CORS header on API
 const activateApiUrlBase =
-  "https://thingproxy.freeboard.io/fetch/https://api.activate.codefi.network/api/v2";
+  "https://api.codetabs.com/v1/proxy/?quest=https://api.activate.codefi.network/api/v2";
 const proposalUrlBase = "https://shot.eth.link/#/vote.airswap.eth/proposal";
 
 const communityLinkRegex = /(?:https:\/\/)community\.airswap\.io[a-zA-Z0-9\-_.!&%/]+/;

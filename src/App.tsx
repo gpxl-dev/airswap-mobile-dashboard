@@ -181,7 +181,7 @@ function App() {
         <div
           className="grid gap-4 items-center"
           style={{
-            gridTemplateColumns: "auto auto 2rem",
+            gridTemplateColumns: "auto auto auto",
           }}
         >
           {categorisedProposals.map(({ label, proposals }) => {
