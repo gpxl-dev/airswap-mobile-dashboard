@@ -56,7 +56,9 @@ function App() {
     },
     {
       label: "past",
-      proposals: proposals?.filter((p) => p.end * 1000 < Date.now()),
+      proposals: proposals?.filter(
+        (p) => p.end * 1000 < Date.now() && p.voters.length
+      ),
     },
   ];
 
@@ -179,7 +181,7 @@ function App() {
         <div
           className="grid gap-4 items-center"
           style={{
-            gridTemplateColumns: "auto auto 2rem 2rem",
+            gridTemplateColumns: "auto auto 3rem 2rem",
           }}
         >
           {categorisedProposals.map(({ label, proposals }) => {

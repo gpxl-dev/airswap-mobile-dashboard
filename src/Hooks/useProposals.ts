@@ -7,7 +7,7 @@ type Space = {
   };
 };
 
-type Proposal = {
+type SnapshotProposal = {
   address: string;
   sig: string;
   authorIpfsHash: string;
@@ -26,7 +26,27 @@ type Proposal = {
   };
 };
 
-type Vote = {
+type ActivateProposal = {
+  id: string;
+  status: "ACCEPTED" | "REJECTED" | "NOT_STARTED";
+  name: string;
+  /**
+   * Javascript timestamp
+   */
+  endDate: number;
+  /**
+   * Javascript timestamp
+   */
+  startDate: number;
+  root: string;
+  block: number;
+  votes: {
+    Yes: string;
+    No: string;
+  };
+};
+
+type SnapshotVote = {
   address: string;
   msg: {
     version: string;
@@ -50,15 +70,29 @@ export type ReducedProposal = {
   active: boolean;
   start: number;
   end: number;
-  choices: {
-    [choiceName: string]: number;
+  onActivate: boolean;
+  status: string | null;
+  votes: {
+    Yes: {
+      points: string | null;
+      voters: number;
+    };
+    No: {
+      points: string | null;
+      voters: number;
+    };
   };
   communityUrl: string | null;
   githubUrl: string | null;
+  proposalUrl: string;
   voters: string[];
 };
 
-const URLBase = "https://hub.snapshot.page/api";
+const snapShotApiUrlBase = "https://hub.snapshot.page/api";
+// Note: proxy needed due to CORS header on API
+const activateApiUrlBase =
+  "https://thingproxy.freeboard.io/fetch/https://api.activate.codefi.network/api/v2";
+const proposalUrlBase = "https://shot.eth.link/#/vote.airswap.eth/proposal";
 
 const communityLinkRegex = /(?:https:\/\/)community\.airswap\.io[a-zA-Z0-9\-_.!&%/]+/;
 const githubLinkRegex = /(?:https:\/\/)github\.com\/airswap[a-zA-Z0-9\-_.!&%/]+/;
@@ -71,66 +105,87 @@ const useProposals = () => {
   useEffect(() => {
     const get = async () => {
       const proposalsPromise = axios.get<{
-        [proposalId: string]: Proposal;
-      }>(`${URLBase}/vote.airswap.eth/proposals`);
+        [proposalId: string]: SnapshotProposal;
+      }>(`${snapShotApiUrlBase}/vote.airswap.eth/proposals`);
       const spacePromise = axios.get<Space>(
-        `${URLBase}/spaces/vote.airswap.eth`
+        `${snapShotApiUrlBase}/spaces/vote.airswap.eth`
       );
-      const [proposalResponse, spaceResponse] = await Promise.all([
+      const activateProposalsPromise = axios.get<ActivateProposal[]>(
+        `${activateApiUrlBase}/proposals/vote.airswap.eth`
+      );
+      const [
+        snapshotProposalsResponse,
+        spaceResponse,
+        activateProposalsResponse,
+      ] = await Promise.all([
         proposalsPromise,
         spacePromise,
+        activateProposalsPromise,
       ]);
       spaceResponse.data.filters.invalids.forEach((invalidId) => {
-        delete proposalResponse.data[invalidId];
+        delete snapshotProposalsResponse.data[invalidId];
       });
-      Object.values(proposalResponse.data).forEach((prop) => {
+      Object.values(snapshotProposalsResponse.data).forEach((prop) => {
         if (!prop.msg.payload.name.startsWith("AIP")) {
-          delete proposalResponse.data[prop.authorIpfsHash];
+          delete snapshotProposalsResponse.data[prop.authorIpfsHash];
         }
       });
-      const proposalIds = Object.keys(proposalResponse.data);
+      const proposalIds = Object.keys(snapshotProposalsResponse.data);
       const votingDataPromises = proposalIds.map((id) =>
         axios.get<{
-          [voterAddress: string]: Vote;
-        }>(`${URLBase}/vote.airswap.eth/proposal/${id}`)
+          [voterAddress: string]: SnapshotVote;
+        }>(`${snapShotApiUrlBase}/vote.airswap.eth/proposal/${id}`)
       );
       const votingDataResponses = await Promise.all(votingDataPromises);
-      const votingData: { [proposalId: string]: Vote[] } = {};
+      const votingData: { [proposalId: string]: SnapshotVote[] } = {};
       votingDataResponses.forEach(
         (r, i) => (votingData[proposalIds[i]] = Object.values(r.data))
       );
 
-      const data: ReducedProposal[] = Object.values(proposalResponse.data)
+      const data: ReducedProposal[] = Object.values(
+        snapshotProposalsResponse.data
+      )
         .sort((a, b) => b.msg.payload.end - a.msg.payload.end)
         .map((proposalData) => {
           const now = Date.now() / 1000;
           const proposalId = proposalData.authorIpfsHash;
-          const proposal = proposalData.msg.payload;
+          const snapshotProposal = proposalData.msg.payload;
+          const activateProposal = activateProposalsResponse.data.find(
+            (p) => p.id === proposalId
+          );
           const votes = votingData[proposalId];
           return {
             id: proposalId,
-            name: proposal.name,
-            body: proposal.body,
-            active: proposal.end > now && proposal.start <= now,
-            start: proposal.start,
-            end: proposal.end,
-            communityUrl: (communityLinkRegex.exec(proposal.body) || [null])[0],
-            githubUrl: (githubLinkRegex.exec(proposal.body) || [null])[0],
-            choices: proposal.choices.reduce(
-              (
-                choiceData: {
-                  [choice: string]: number;
-                },
-                choice,
-                i
-              ) => {
-                choiceData[choice] = votes?.filter(
-                  (v) => v.msg.payload.choice === i
-                ).length;
-                return choiceData;
+            name: snapshotProposal.name,
+            body: snapshotProposal.body,
+            active: snapshotProposal.end > now && snapshotProposal.start <= now,
+            start: snapshotProposal.start,
+            end: snapshotProposal.end,
+            onActivate: !!activateProposal,
+            votes: {
+              Yes: {
+                points: activateProposal?.votes.Yes || null,
+                voters: votes?.filter((v) => {
+                  const i = snapshotProposal.choices.indexOf("Yes") + 1;
+                  return v.msg.payload.choice === i;
+                }).length,
               },
-              {}
-            ),
+              No: {
+                points: activateProposal?.votes.No || null,
+                voters: votes?.filter((v) => {
+                  const i = snapshotProposal.choices.indexOf("No") + 1;
+                  return v.msg.payload.choice === i;
+                }).length,
+              },
+            },
+            status: activateProposal?.status || null,
+            proposalUrl: `${proposalUrlBase}/${proposalId}`,
+            communityUrl: (communityLinkRegex.exec(snapshotProposal.body) || [
+              null,
+            ])[0],
+            githubUrl: (githubLinkRegex.exec(snapshotProposal.body) || [
+              null,
+            ])[0],
             voters: votes?.map((v) => v.address) || [],
           };
         });
