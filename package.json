@@ -16,6 +16,7 @@
     "axios": "^0.21.1",
     "classnames": "^2.3.1",
     "cross-env": "7.x",
+    "discourse-js": "^3.0.6",
     "erc-20-abi": "^1.0.0",
     "ethers": "^5.1.0",
     "npm-run-all": "4.x",

@@ -5,6 +5,7 @@ import { FaSearchDollar } from "react-icons/fa";
 import useProposals from "./Hooks/useProposals";
 import ASTBalance from "./Components/ASTBalance";
 import ProposalListItem from "./Components/ProposalListItem";
+import useDiscourseTopics from "./Hooks/useDiscourseTopics";
 
 function App() {
   const [addressFieldValue, setAddressFieldValue] = useState<string>(
@@ -27,6 +28,8 @@ function App() {
   const [showConfirmDefaultChange, setShowConfirmDefaultChange] = useState<
     "set" | "unset" | null
   >(null);
+
+  useDiscourseTopics();
 
   const toggleExpanded = (proposalId: string) => {
     setExpanded((prev) =>
