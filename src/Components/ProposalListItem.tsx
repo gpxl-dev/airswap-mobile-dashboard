@@ -47,24 +47,21 @@ const ProposalListItem: FC<{
         )}
         <span className="font-semibold">{proposal.name}</span>
       </div>
-      {/* <div className="grid grid-flow-col gap-2">
-        <a href={proposal.proposalUrl} target="_blank" rel="noreferrer">
-          <BsFillLightningFill />
-        </a>
-        {proposal.communityUrl && (
-          <a href={proposal.communityUrl} target="_blank" rel="noreferrer">
-            <VscCommentDiscussion />
-          </a>
-        )}
-        {proposal.githubUrl && (
-          <a href={proposal.githubUrl} target="_blank" rel="noreferrer">
-            <AiOutlineGithub />
-          </a>
-        )}
-      </div> */}
       {voted ? <FaVoteYea /> : "-"}
       {expanded && (
         <div className="col-start-2">
+          {!proposal.active && proposal.start * 1000 > Date.now() && (
+            <span className="block text-xs -mt-3 mb-4">
+              <span className="mr-1">Voting opens:</span>
+              {new Date(proposal.start * 1000).toLocaleString(
+                window.navigator.language,
+                {
+                  dateStyle: "long",
+                  timeStyle: "short",
+                }
+              )}
+            </span>
+          )}
           {
             <div className="grid grid-flow-col justify-items-center mb-4">
               <a
@@ -98,7 +95,11 @@ const ProposalListItem: FC<{
             </div>
           }
           <ReactMarkdown className="prose-sm text-gray-600">
-            {proposal.body}
+            {
+              proposal.body
+                .split("Read more on the AIP:")[0]
+                .split("https://github.com/airswap/AIPs")[0]
+            }
           </ReactMarkdown>
           {isCompleted && (
             <div className="flex-col mt-4">
