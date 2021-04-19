@@ -109,13 +109,11 @@ const ProposalListItem: FC<{
                   style={{ flex: proposal.votes.Yes.points || "0" }}
                   className="bg-green-700 rounded-l-sm"
                 >
-                  &nbsp;
                 </div>
                 <div
                   style={{ flex: proposal.votes.No.points || "0" }}
                   className="bg-red-700 rounded-r-sm"
                 >
-                  &nbsp;
                 </div>
               </div>
               <div
@@ -124,12 +122,12 @@ const ProposalListItem: FC<{
               >
                 <div className="justify-self-start">Yes</div>
                 <div>
-                  {utils.commify(proposal.votes.Yes.points || "0")} points
+                  {utils.commify(parseInt(utils.formatUnits(proposal.votes.Yes.points || "0", 4)) )} points
                 </div>
                 <div> ({utils.commify(proposal.votes.Yes.voters)} voters)</div>
                 <div className="justify-self-start">No</div>
                 <div>
-                  {utils.commify(proposal.votes.No.points || "0")} points
+                  {utils.commify(parseInt(utils.formatUnits(proposal.votes.No.points|| "0", 4)))} points
                 </div>
                 <div> ({utils.commify(proposal.votes.No.voters)} voters)</div>
               </div>
