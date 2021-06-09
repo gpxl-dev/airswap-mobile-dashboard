@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-type Space = {
-  filters: {
-    invalids: string[];
-  };
-};
-
 type SnapshotProposal = {
   address: string;
   sig: string;
@@ -94,37 +88,28 @@ const activateApiUrlBase =
   "https://api.codetabs.com/v1/proxy/?quest=https://api.activate.codefi.network/api/v2";
 const proposalUrlBase = "https://snapshot.org/#/vote.airswap.eth/proposal";
 
-const communityLinkRegex = /(?:https:\/\/)community\.airswap\.io[a-zA-Z0-9\-_.!&%/]+/;
-const githubLinkRegex = /(?:https:\/\/)github\.com\/airswap[a-zA-Z0-9\-_.!&%/]+/;
+const communityLinkRegex =
+  /(?:https:\/\/)community\.airswap\.io[a-zA-Z0-9\-_.!&%/]+/;
+const githubLinkRegex =
+  /(?:https:\/\/)github\.com\/airswap[a-zA-Z0-9\-_.!&%/]+/;
 
 const useProposals = () => {
-  const [proposalData, setProposalData] = useState<ReducedProposal[] | null>(
-    null
-  );
+  const [proposalData, setProposalData] =
+    useState<ReducedProposal[] | null>(null);
 
   useEffect(() => {
     const get = async () => {
       const proposalsPromise = axios.get<{
         [proposalId: string]: SnapshotProposal;
       }>(`${snapShotApiUrlBase}/vote.airswap.eth/proposals`);
-      const spacePromise = axios.get<Space>(
-        `${snapShotApiUrlBase}/spaces/vote.airswap.eth`
-      );
+      // const spacePromise = axios.get<Space>(
+      //   `${snapShotApiUrlBase}/spaces/vote.airswap.eth`
+      // );
       const activateProposalsPromise = axios.get<ActivateProposal[]>(
         `${activateApiUrlBase}/proposals/vote.airswap.eth`
       );
-      const [
-        snapshotProposalsResponse,
-        spaceResponse,
-        activateProposalsResponse,
-      ] = await Promise.all([
-        proposalsPromise,
-        spacePromise,
-        activateProposalsPromise,
-      ]);
-      spaceResponse.data.filters.invalids.forEach((invalidId) => {
-        delete snapshotProposalsResponse.data[invalidId];
-      });
+      const [snapshotProposalsResponse, activateProposalsResponse] =
+        await Promise.all([proposalsPromise, activateProposalsPromise]);
       Object.values(snapshotProposalsResponse.data).forEach((prop) => {
         if (!prop.msg.payload.name.startsWith("AIP")) {
           delete snapshotProposalsResponse.data[prop.authorIpfsHash];
